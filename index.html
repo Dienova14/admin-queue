@@ -15,9 +15,7 @@
   --bg:#f1f5f9;
   --card:#ffffff;
 }
-
 *{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:Inter,Segoe UI,system-ui,sans-serif;
@@ -28,11 +26,7 @@ body{
   min-height:100vh;
   padding:20px;
 }
-
-.container{
-  max-width:1200px;
-  margin:auto;
-}
+.container{max-width:1200px;margin:auto}
 
 /* HEADER */
 .header{
@@ -41,31 +35,18 @@ body{
   align-items:center;
   margin-bottom:20px;
 }
-.header h1{
-  margin:0;
-  font-size:24px;
-}
-.header p{
-  margin:4px 0 0;
-  color:var(--muted);
-  font-size:14px;
-}
+.header h1{margin:0;font-size:24px}
+.header p{margin:4px 0 0;color:var(--muted);font-size:14px}
 
 /* ACTIONS */
-.actions{
-  display:flex;
-  gap:10px;
-}
+.actions{display:flex;gap:10px}
 button{
   padding:12px 18px;
   border-radius:14px;
   border:none;
   font-weight:600;
   cursor:pointer;
-  transition:.15s;
 }
-button:active{transform:scale(.97)}
-
 .btn-next{background:var(--success);color:white}
 .btn-skip{background:var(--warning);color:white}
 .btn-reset{background:var(--danger);color:white}
@@ -86,10 +67,6 @@ button:active{transform:scale(.97)}
 }
 
 /* CURRENT */
-.current h2{
-  margin-top:0;
-  font-size:18px;
-}
 .current-number{
   font-size:46px;
   font-weight:800;
@@ -110,7 +87,6 @@ button:active{transform:scale(.97)}
   padding:8px 14px;
   border-radius:999px;
   background:#e5e7eb;
-  color:#111827;
   font-size:13px;
 }
 .filter button.active{
@@ -128,24 +104,21 @@ button:active{transform:scale(.97)}
   background:#f8fafc;
   margin-bottom:10px;
 }
-.item b{font-size:15px}
-
 .badge{
   padding:6px 12px;
   border-radius:999px;
   font-size:12px;
   font-weight:700;
 }
-.badge.now{background:#dcfce7;color:var(--success)}
-.badge.ready{background:#fef3c7;color:var(--warning)}
-.badge.wait{background:#e5e7eb;color:var(--muted)}
-.badge.done{background:#e5e7eb;color:#475569}
+.now{background:#dcfce7;color:var(--success)}
+.ready{background:#fef3c7;color:var(--warning)}
+.wait{background:#e5e7eb;color:var(--muted)}
+.done{background:#e5e7eb;color:#475569}
 
 .empty{
   text-align:center;
   color:var(--muted);
   padding:20px;
-  font-size:14px;
 }
 </style>
 </head>
@@ -169,7 +142,7 @@ button:active{transform:scale(.97)}
   <div class="grid">
 
     <!-- CURRENT -->
-    <div class="card current">
+    <div class="card">
       <h2>Sedang Charging</h2>
       <div class="current-number" id="currentNumber">-</div>
       <div class="current-info" id="currentInfo">Belum ada</div>
@@ -202,31 +175,39 @@ firebase.initializeApp({
   authDomain:"queue-charge.firebaseapp.com",
   projectId:"queue-charge"
 });
-const db=firebase.firestore();
+const db = firebase.firestore();
 
-let currentNumber=0;
-let queueData=[];
-let filter="all";
+/* ===== DOM BIND (INI KUNCINYA) ===== */
+const currentNumberEl = document.getElementById("currentNumber");
+const currentInfo = document.getElementById("currentInfo");
+const queueList = document.getElementById("queueList");
 
-/* REALTIME META */
+/* ===== STATE ===== */
+let currentNumber = 0;
+let queueData = [];
+let filter = "all";
+
+/* ===== REALTIME META ===== */
 db.collection("meta").doc("state").onSnapshot(d=>{
-  currentNumber=d.exists?d.data().current:0;
+  currentNumber = d.exists ? d.data().current : 0;
   render();
 });
 
-/* REALTIME QUEUE (ANTI INDEX) */
+/* ===== REALTIME QUEUE (ANTI INDEX) ===== */
 db.collection("queue").onSnapshot(s=>{
-  queueData=s.docs.map(d=>d.data()).sort((a,b)=>a.number-b.number);
+  queueData = s.docs.map(d=>d.data())
+    .sort((a,b)=>a.number-b.number);
   render();
 });
 
+/* ===== RENDER ===== */
 function render(){
   renderCurrent();
   renderList();
 }
 
 function renderCurrent(){
-  const cur=queueData.find(q=>q.number===currentNumber);
+  const cur = queueData.find(q=>q.number===currentNumber);
   if(!cur){
     currentNumberEl.innerText="-";
     currentInfo.innerText="Belum ada";
@@ -237,10 +218,8 @@ function renderCurrent(){
 }
 
 function renderList(){
-  const list=document.getElementById("queueList");
-  list.innerHTML="";
-
-  let filtered=queueData.filter(q=>{
+  queueList.innerHTML="";
+  let filtered = queueData.filter(q=>{
     if(filter==="now") return q.number===currentNumber;
     if(filter==="ready") return q.number===currentNumber+1;
     if(filter==="wait") return q.number>currentNumber+1;
@@ -249,7 +228,7 @@ function renderList(){
   });
 
   if(filtered.length===0){
-    list.innerHTML='<div class="empty">Tidak ada data</div>';
+    queueList.innerHTML='<div class="empty">Tidak ada data</div>';
     return;
   }
 
@@ -259,33 +238,30 @@ function renderList(){
     else if(q.number===currentNumber){status="SEKARANG";cls="now";}
     else if(q.number===currentNumber+1){status="BERSIAP";cls="ready";}
 
-    list.innerHTML+=`
+    queueList.innerHTML+=`
       <div class="item">
-        <div>
-          <b>#${q.number}</b><br>
-          ${q.name} – ${q.plate}
-        </div>
+        <div><b>#${q.number}</b> ${q.name} – ${q.plate}</div>
         <span class="badge ${cls}">${status}</span>
-      </div>
-    `;
+      </div>`;
   });
 }
 
-/* ACTIONS */
+/* ===== ACTIONS ===== */
 async function nextQueue(){
   await db.collection("meta").doc("state")
     .set({current:currentNumber+1});
 }
+
 async function resetQueue(){
   if(!confirm("Reset semua antrian?")) return;
-  const snap=await db.collection("queue").get();
-  const batch=db.batch();
+  const snap = await db.collection("queue").get();
+  const batch = db.batch();
   snap.docs.forEach(d=>batch.delete(d.ref));
   await batch.commit();
   await db.collection("meta").doc("state").set({current:0});
 }
 
-/* FILTER */
+/* ===== FILTER ===== */
 function setFilter(f){
   filter=f;
   document.querySelectorAll(".filter button")

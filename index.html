@@ -7,64 +7,190 @@
 
 <style>
 :root{
+  --primary:#2563eb;
   --success:#16a34a;
   --warning:#f59e0b;
-  --muted:#64748b;
   --danger:#ef4444;
+  --muted:#64748b;
   --bg:#f1f5f9;
+  --card:#ffffff;
 }
+
 *{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:Inter,Segoe UI,sans-serif;
-  background:var(--bg);
-  padding:16px;
+  font-family:Inter,Segoe UI,system-ui,sans-serif;
+  background:
+    radial-gradient(1000px 400px at 10% -10%, #dbeafe, transparent),
+    radial-gradient(800px 300px at 90% 10%, #e0f2fe, transparent),
+    var(--bg);
+  min-height:100vh;
+  padding:20px;
 }
-.container{max-width:1100px;margin:auto}
-h1{margin:0}
-button{
-  padding:10px 16px;
-  border-radius:12px;
-  border:none;
-  font-weight:600;
-  cursor:pointer;
-}
-.next{background:var(--success);color:white}
-.skip{background:var(--warning);color:white}
-.reset{background:var(--danger);color:white}
 
-.item{
-  background:white;
-  padding:14px;
-  border-radius:14px;
-  margin-bottom:10px;
+.container{
+  max-width:1200px;
+  margin:auto;
+}
+
+/* HEADER */
+.header{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  margin-bottom:20px;
 }
+.header h1{
+  margin:0;
+  font-size:24px;
+}
+.header p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:14px;
+}
+
+/* ACTIONS */
+.actions{
+  display:flex;
+  gap:10px;
+}
+button{
+  padding:12px 18px;
+  border-radius:14px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+  transition:.15s;
+}
+button:active{transform:scale(.97)}
+
+.btn-next{background:var(--success);color:white}
+.btn-skip{background:var(--warning);color:white}
+.btn-reset{background:var(--danger);color:white}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 2fr;
+  gap:18px;
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 20px 40px rgba(0,0,0,.08);
+}
+
+/* CURRENT */
+.current h2{
+  margin-top:0;
+  font-size:18px;
+}
+.current-number{
+  font-size:46px;
+  font-weight:800;
+  color:var(--success);
+}
+.current-info{
+  margin-top:10px;
+  font-size:15px;
+}
+
+/* FILTER */
+.filter{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+.filter button{
+  padding:8px 14px;
+  border-radius:999px;
+  background:#e5e7eb;
+  color:#111827;
+  font-size:13px;
+}
+.filter button.active{
+  background:var(--primary);
+  color:white;
+}
+
+/* LIST */
+.item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-radius:16px;
+  background:#f8fafc;
+  margin-bottom:10px;
+}
+.item b{font-size:15px}
+
 .badge{
   padding:6px 12px;
   border-radius:999px;
   font-size:12px;
   font-weight:700;
 }
-.now{background:#dcfce7;color:var(--success)}
-.ready{background:#fef3c7;color:var(--warning)}
-.wait{background:#e5e7eb;color:var(--muted)}
-.done{background:#e5e7eb;color:#475569}
+.badge.now{background:#dcfce7;color:var(--success)}
+.badge.ready{background:#fef3c7;color:var(--warning)}
+.badge.wait{background:#e5e7eb;color:var(--muted)}
+.badge.done{background:#e5e7eb;color:#475569}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:20px;
+  font-size:14px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>🔌 Admin Charger Motor</h1>
-  <br>
-  <button class="next" onclick="next()">NEXT</button>
-  <button class="skip" onclick="next()">SKIP</button>
-  <button class="reset" onclick="resetAll()">RESET</button>
-  <br><br>
-  <div id="list"></div>
+
+  <div class="header">
+    <div>
+      <h1>🔌 Admin Charger Motor</h1>
+      <p>Monitoring & kontrol antrian</p>
+    </div>
+    <div class="actions">
+      <button class="btn-next" onclick="nextQueue()">NEXT</button>
+      <button class="btn-skip" onclick="nextQueue()">SKIP</button>
+      <button class="btn-reset" onclick="resetQueue()">RESET</button>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- CURRENT -->
+    <div class="card current">
+      <h2>Sedang Charging</h2>
+      <div class="current-number" id="currentNumber">-</div>
+      <div class="current-info" id="currentInfo">Belum ada</div>
+    </div>
+
+    <!-- LIST -->
+    <div class="card">
+      <h2>Antrian</h2>
+
+      <div class="filter">
+        <button id="f-all" class="active" onclick="setFilter('all')">Semua</button>
+        <button id="f-now" onclick="setFilter('now')">Sekarang</button>
+        <button id="f-ready" onclick="setFilter('ready')">Bersiap</button>
+        <button id="f-wait" onclick="setFilter('wait')">Menunggu</button>
+        <button id="f-done" onclick="setFilter('done')">Selesai</button>
+      </div>
+
+      <div id="queueList" class="empty">Memuat data...</div>
+    </div>
+
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -78,44 +204,94 @@ firebase.initializeApp({
 });
 const db=firebase.firestore();
 
-let current=0, queue=[];
+let currentNumber=0;
+let queueData=[];
+let filter="all";
 
+/* REALTIME META */
 db.collection("meta").doc("state").onSnapshot(d=>{
-  current=d.exists?d.data().current:0;
+  currentNumber=d.exists?d.data().current:0;
   render();
 });
 
+/* REALTIME QUEUE (ANTI INDEX) */
 db.collection("queue").onSnapshot(s=>{
-  queue=s.docs.map(d=>d.data()).sort((a,b)=>a.number-b.number);
+  queueData=s.docs.map(d=>d.data()).sort((a,b)=>a.number-b.number);
   render();
 });
 
 function render(){
+  renderCurrent();
+  renderList();
+}
+
+function renderCurrent(){
+  const cur=queueData.find(q=>q.number===currentNumber);
+  if(!cur){
+    currentNumberEl.innerText="-";
+    currentInfo.innerText="Belum ada";
+    return;
+  }
+  currentNumberEl.innerText="#"+cur.number;
+  currentInfo.innerHTML=`<b>${cur.name}</b><br>${cur.plate}`;
+}
+
+function renderList(){
+  const list=document.getElementById("queueList");
   list.innerHTML="";
-  queue.forEach(q=>{
-    let st="MENUNGGU", cls="wait";
-    if(q.number < current){st="SELESAI";cls="done";}
-    else if(q.number===current){st="SEKARANG";cls="now";}
-    else if(q.number===current+1){st="BERSIAP";cls="ready";}
+
+  let filtered=queueData.filter(q=>{
+    if(filter==="now") return q.number===currentNumber;
+    if(filter==="ready") return q.number===currentNumber+1;
+    if(filter==="wait") return q.number>currentNumber+1;
+    if(filter==="done") return q.number<currentNumber;
+    return true;
+  });
+
+  if(filtered.length===0){
+    list.innerHTML='<div class="empty">Tidak ada data</div>';
+    return;
+  }
+
+  filtered.forEach(q=>{
+    let status="MENUNGGU", cls="wait";
+    if(q.number<currentNumber){status="SELESAI";cls="done";}
+    else if(q.number===currentNumber){status="SEKARANG";cls="now";}
+    else if(q.number===currentNumber+1){status="BERSIAP";cls="ready";}
 
     list.innerHTML+=`
       <div class="item">
-        <div><b>#${q.number}</b> ${q.name} – ${q.plate}</div>
-        <span class="badge ${cls}">${st}</span>
-      </div>`;
+        <div>
+          <b>#${q.number}</b><br>
+          ${q.name} – ${q.plate}
+        </div>
+        <span class="badge ${cls}">${status}</span>
+      </div>
+    `;
   });
 }
 
-async function next(){
-  await db.collection("meta").doc("state").set({current:current+1});
+/* ACTIONS */
+async function nextQueue(){
+  await db.collection("meta").doc("state")
+    .set({current:currentNumber+1});
 }
-async function resetAll(){
-  if(!confirm("Reset semua antrian?"))return;
+async function resetQueue(){
+  if(!confirm("Reset semua antrian?")) return;
   const snap=await db.collection("queue").get();
-  const b=db.batch();
-  snap.docs.forEach(d=>b.delete(d.ref));
-  await b.commit();
+  const batch=db.batch();
+  snap.docs.forEach(d=>batch.delete(d.ref));
+  await batch.commit();
   await db.collection("meta").doc("state").set({current:0});
+}
+
+/* FILTER */
+function setFilter(f){
+  filter=f;
+  document.querySelectorAll(".filter button")
+    .forEach(b=>b.classList.remove("active"));
+  document.getElementById("f-"+f).classList.add("active");
+  renderList();
 }
 </script>
 
